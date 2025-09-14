@@ -1,0 +1,499 @@
+openapi: 3.0.3
+info:
+  title: WhatsApp Business Webhook API
+  description: |
+    API para manejar webhooks de WhatsApp Business con verificación segura HMAC-SHA256.
+    
+    ## Autenticación
+    - **Webhook Verification**: Usa `VERIFY_TOKEN` para verificación GET
+    - **Event Processing**: Requiere firma HMAC-SHA256 en header `x-hub-signature-256`
+    
+    ## Variables de Entorno Requeridas
+    - `VERIFY_TOKEN`: Token para verificación del webhook
+    - `APP_SECRET`: Secreto para verificación de firma HMAC
+    - `CUSTOM_KEY`: Clave personalizada adicional
+  version: 1.0.0
+  contact:
+    name: ClubIgma
+    url: https://clubigma.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://clubigma-whats-app-webhook.vercel.app
+    description: Producción
+  - url: http://localhost:3000
+    description: Desarrollo local
+
+paths:
+  /api/webhook:
+    get:
+      summary: Verificación del Webhook
+      description: |
+        Endpoint para verificar el webhook con Meta WhatsApp Business API.
+        Meta envía una petición GET con parámetros de verificación.
+      parameters:
+        - name: hub.mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [subscribe]
+          description: Modo de verificación (debe ser 'subscribe')
+        - name: hub.verify_token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de verificación (debe coincidir con VERIFY_TOKEN)
+        - name: hub.challenge
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Challenge string que debe ser devuelto
+      responses:
+        '200':
+          description: Verificación exitosa
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "1234567890"
+        '403':
+          description: Verificación fallida - token inválido o parámetros faltantes
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Forbidden"
+        '500':
+          description: Error de configuración del servidor
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Server configuration error"
+      tags:
+        - Webhook
+
+    post:
+      summary: Procesar Eventos del Webhook
+      description: |
+        Procesa eventos entrantes de WhatsApp Business.
+        Requiere verificación de firma HMAC-SHA256 para seguridad.
+      parameters:
+        - name: x-hub-signature-256
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Firma HMAC-SHA256 del cuerpo de la petición
+          example: "sha256=a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookEvent'
+            examples:
+              message_received:
+                summary: Mensaje de texto recibido
+                value:
+                  object: "whatsapp_business_account"
+                  entry:
+                    - id: "123456789012345"
+                      changes:
+                        - value:
+                            messaging_product: "whatsapp"
+                            metadata:
+                              display_phone_number: "15551234567"
+                              phone_number_id: "987654321098765"
+                            contacts:
+                              - profile:
+                                  name: "Juan Pérez"
+                                wa_id: "5491123456789"
+                            messages:
+                              - from: "5491123456789"
+                                id: "wamid.HBgLNTQ5MTE2NzQyNzQzNRUCABIYFjNBMDJCMUY2RkY4QzRBOEE4RTlCNzMA"
+                                timestamp: "1704067200"
+                                text:
+                                  body: "Hola! Este es un mensaje de prueba."
+                                type: "text"
+                          field: "messages"
+              message_status:
+                summary: Estado de mensaje actualizado
+                value:
+                  object: "whatsapp_business_account"
+                  entry:
+                    - id: "123456789012345"
+                      changes:
+                        - value:
+                            messaging_product: "whatsapp"
+                            metadata:
+                              display_phone_number: "15551234567"
+                              phone_number_id: "987654321098765"
+                            statuses:
+                              - id: "wamid.ID"
+                                status: "delivered"
+                                timestamp: "1704067200"
+                                recipient_id: "5491123456789"
+                          field: "messages"
+      responses:
+        '200':
+          description: Evento procesado exitosamente
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "OK"
+        '400':
+          description: Petición malformada - JSON inválido
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Bad Request"
+        '401':
+          description: No autorizado - firma faltante o inválida
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Unauthorized"
+        '500':
+          description: Error interno del servidor
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "Internal Server Error"
+      tags:
+        - Webhook
+
+  /api/health:
+    get:
+      summary: Health Check
+      description: |
+        Endpoint de monitoreo para verificar el estado del sistema.
+        Valida variables de entorno y proporciona métricas básicas.
+      responses:
+        '200':
+          description: Sistema saludable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Sistema saludable
+                  value:
+                    ok: true
+                    timestamp: "2025-01-14T10:30:00.000Z"
+                    uptime: 3600.5
+                    environment:
+                      nodeVersion: "v18.17.0"
+                      platform: "linux"
+                      arch: "x64"
+                    config:
+                      hasRequiredEnvVars: true
+                      envValidation:
+                        hasVerifyToken: true
+                        hasAppSecret: true
+                        appSecretLength: 32
+                    responseTime: 15
+                unhealthy:
+                  summary: Problemas de configuración
+                  value:
+                    ok: false
+                    timestamp: "2025-01-14T10:30:00.000Z"
+                    uptime: 3600.5
+                    environment:
+                      nodeVersion: "v18.17.0"
+                      platform: "linux"
+                      arch: "x64"
+                    config:
+                      hasRequiredEnvVars: false
+                      envValidation:
+                        hasVerifyToken: false
+                        hasAppSecret: true
+                        appSecretLength: 32
+                    responseTime: 12
+                    issues:
+                      - "VERIFY_TOKEN environment variable is required"
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthErrorResponse'
+      tags:
+        - Health
+
+    post:
+      summary: Health Check (POST)
+      description: Mismo que GET, pero acepta método POST para herramientas de monitoreo
+      responses:
+        '200':
+          description: Sistema saludable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthErrorResponse'
+      tags:
+        - Health
+
+components:
+  schemas:
+    WebhookEvent:
+      type: object
+      required:
+        - object
+        - entry
+      properties:
+        object:
+          type: string
+          enum: [whatsapp_business_account]
+          description: Tipo de objeto del webhook
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEntry'
+          description: Array de entradas del webhook
+
+    WebhookEntry:
+      type: object
+      required:
+        - id
+        - changes
+      properties:
+        id:
+          type: string
+          description: ID de la cuenta de WhatsApp Business
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookChange'
+          description: Array de cambios en esta entrada
+
+    WebhookChange:
+      type: object
+      required:
+        - field
+        - value
+      properties:
+        field:
+          type: string
+          enum: [messages, message_template_status_update]
+          description: Campo que cambió
+        value:
+          oneOf:
+            - $ref: '#/components/schemas/MessagesValue'
+            - $ref: '#/components/schemas/TemplateStatusValue'
+          description: Valor del cambio
+
+    MessagesValue:
+      type: object
+      properties:
+        messaging_product:
+          type: string
+          enum: [whatsapp]
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contact'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageStatus'
+
+    TemplateStatusValue:
+      type: object
+      properties:
+        message_template_id:
+          type: string
+        message_template_name:
+          type: string
+        message_template_language:
+          type: string
+        event:
+          type: string
+          enum: [APPROVED, REJECTED, PENDING]
+
+    Metadata:
+      type: object
+      properties:
+        display_phone_number:
+          type: string
+        phone_number_id:
+          type: string
+
+    Contact:
+      type: object
+      properties:
+        profile:
+          type: object
+          properties:
+            name:
+              type: string
+        wa_id:
+          type: string
+
+    Message:
+      type: object
+      required:
+        - from
+        - id
+        - timestamp
+        - type
+      properties:
+        from:
+          type: string
+          description: WhatsApp ID del remitente
+        id:
+          type: string
+          description: ID único del mensaje
+        timestamp:
+          type: string
+          description: Timestamp del mensaje
+        type:
+          type: string
+          enum: [text, image, document, audio, video]
+          description: Tipo de mensaje
+        text:
+          type: object
+          properties:
+            body:
+              type: string
+        image:
+          type: object
+          properties:
+            id:
+              type: string
+            mime_type:
+              type: string
+            sha256:
+              type: string
+        document:
+          type: object
+          properties:
+            id:
+              type: string
+            filename:
+              type: string
+            mime_type:
+              type: string
+            sha256:
+              type: string
+
+    MessageStatus:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [sent, delivered, read, failed]
+        timestamp:
+          type: string
+        recipient_id:
+          type: string
+
+    HealthResponse:
+      type: object
+      required:
+        - ok
+        - timestamp
+        - uptime
+        - environment
+        - config
+        - responseTime
+      properties:
+        ok:
+          type: boolean
+          description: Estado general del sistema
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp de la respuesta
+        uptime:
+          type: number
+          description: Tiempo de actividad en segundos
+        environment:
+          type: object
+          properties:
+            nodeVersion:
+              type: string
+            platform:
+              type: string
+            arch:
+              type: string
+        config:
+          type: object
+          properties:
+            hasRequiredEnvVars:
+              type: boolean
+            envValidation:
+              type: object
+              properties:
+                hasVerifyToken:
+                  type: boolean
+                hasAppSecret:
+                  type: boolean
+                appSecretLength:
+                  type: integer
+        responseTime:
+          type: number
+          description: Tiempo de respuesta en ms
+        issues:
+          type: array
+          items:
+            type: string
+          description: Lista de problemas encontrados (solo si ok=false)
+
+    HealthErrorResponse:
+      type: object
+      required:
+        - ok
+        - timestamp
+        - error
+        - responseTime
+      properties:
+        ok:
+          type: boolean
+          enum: [false]
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string
+          description: Mensaje de error
+        responseTime:
+          type: number
+          description: Tiempo de respuesta en ms
+
+  securitySchemes:
+    WebhookSignature:
+      type: apiKey
+      in: header
+      name: x-hub-signature-256
+      description: Firma HMAC-SHA256 del cuerpo de la petición
+
+tags:
+  - name: Webhook
+    description: Endpoints para manejo de webhooks de WhatsApp Business
+  - name: Health
+    description: Endpoints de monitoreo y salud del sistema

@@ -24,6 +24,16 @@ function WebhookDashboard() {
                 /api/health
               </Link>
             </div>
+
+            <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
+              <h2 className="text-sm font-medium text-purple-800 mb-2">API Documentation</h2>
+              <Link
+                href="/docs"
+                className="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded hover:bg-purple-200 transition-colors"
+              >
+                Swagger UI
+              </Link>
+            </div>
           </div>
 
           <div className="mt-6 text-xs text-gray-500">
