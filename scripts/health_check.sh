@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script para verificar el health check del webhook
-# Uso: ./scripts/health_check.sh https://tu-app.vercel.app
+# Uso: ./scripts/health_check.sh https://clubigma.vercel.app
 
 set -e
 
@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 if [[ $# -eq 0 ]]; then
     echo -e "${RED}Error: Se requiere la URL base${NC}"
     echo "Uso: $0 <URL_BASE>"
-    echo "Ejemplo: $0 https://tu-app.vercel.app"
+    echo "Ejemplo: $0 https://clubigma.vercel.app"
     exit 1
 fi
 

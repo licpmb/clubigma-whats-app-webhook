@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script para probar webhook de WhatsApp en producción
-# Uso: ./scripts/test_webhook_prod.sh --url https://tu-app.vercel.app --app-secret $APP_SECRET --body-file ./samples/sample_body.json
+# Uso: ./scripts/test_webhook_prod.sh --url https://clubigma.vercel.app --app-secret $APP_SECRET --body-file ./samples/sample_body.json
 
 set -e
 
@@ -21,13 +21,13 @@ show_help() {
     echo "Uso: $0 --url URL --app-secret SECRET --body-file FILE"
     echo ""
     echo "Opciones:"
-    echo "  --url         URL base de la aplicación (ej: https://tu-app.vercel.app)"
+    echo "  --url         URL base de la aplicación (ej: https://clubigma.vercel.app)"
     echo "  --app-secret  App Secret de Meta para calcular HMAC"
     echo "  --body-file   Archivo JSON con el cuerpo del webhook"
     echo "  --help        Mostrar esta ayuda"
     echo ""
     echo "Ejemplo:"
-    echo "  $0 --url https://tu-app.vercel.app --app-secret \$APP_SECRET --body-file ./samples/sample_body.json"
+    echo "  $0 --url https://clubigma.vercel.app --app-secret \$APP_SECRET --body-file ./samples/sample_body.json"
 }
 
 # Parsear argumentos
