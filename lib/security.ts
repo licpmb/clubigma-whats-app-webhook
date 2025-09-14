@@ -1,5 +1,3 @@
-import { timingSafeEqual } from "crypto"
-
 /**
  * Verifies the webhook signature using HMAC-SHA256
  * @param signature The signature from the x-hub-signature-256 header
@@ -25,7 +23,7 @@ export async function verifyWebhookSignature(signature: string, rawBody: string,
       .join("")
 
     // Timing-safe comparison to prevent timing attacks
-    return timingSafeEqual(cleanSignature, expectedSignature)
+    return timingSafeStringCompare(cleanSignature, expectedSignature)
   } catch (error) {
     console.error("[SECURITY] Error verifying signature:", error)
     return false
