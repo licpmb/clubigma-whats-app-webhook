@@ -105,14 +105,6 @@ vercel --prod
 
 ## 🧪 Pruebas
 
-### Verificación GET (Webhook Verification)
-
-\`\`\`bash
-curl "https://tu-app.vercel.app/api/webhook?hub.mode=subscribe&hub.verify_token=clubigma_verify_2025&hub.challenge=test_challenge"
-\`\`\`
-
-**Respuesta esperada**: `test_challenge`
-
 ### Health Check
 
 \`\`\`bash
@@ -130,41 +122,75 @@ curl https://tu-app.vercel.app/api/health
 }
 \`\`\`
 
-### Evento POST (Simulación)
+### Verificación GET (Webhook Verification)
 
 \`\`\`bash
-# Generar firma HMAC (reemplaza APP_SECRET y BODY)
-echo -n '{"test":"data"}' | openssl dgst -sha256 -hmac "tu_app_secret" -binary | base64
-
-# Enviar evento
-curl -X POST https://tu-app.vercel.app/api/webhook \
-  -H "Content-Type: application/json" \
-  -H "x-hub-signature-256: sha256=FIRMA_CALCULADA" \
-  -d '{"test":"data"}'
+curl "https://tu-app.vercel.app/api/webhook?hub.mode=subscribe&hub.verify_token=clubigma_verify_2025&hub.challenge=test_challenge"
 \`\`\`
 
-## 📊 Monitoring y Logs
+**Respuesta esperada**: `test_challenge`
 
-### Logs en Vercel
+### Scripts de Producción
+
+#### Health Check Automatizado
 
 \`\`\`bash
-vercel logs https://tu-app.vercel.app
+# Hacer ejecutable
+chmod +x scripts/health_check.sh
+
+# Ejecutar contra producción
+./scripts/health_check.sh https://tu-app.vercel.app
 \`\`\`
 
-### Logs locales
+#### Test Completo del Webhook
 
-Los logs se muestran en la consola con prefijos identificables:
-- `[WEBHOOK]` - Eventos del webhook
-- `[SECURITY]` - Verificaciones de seguridad
-- `[HEALTH]` - Health checks
+\`\`\`bash
+# Hacer ejecutable
+chmod +x scripts/test_webhook_prod.sh
 
-### Ejemplo de logs
-
+# Ejecutar con tu APP_SECRET
+./scripts/test_webhook_prod.sh \
+  --url https://tu-app.vercel.app \
+  --app-secret $APP_SECRET \
+  --body-file ./samples/sample_body.json
 \`\`\`
-[WEBHOOK] GET verification request: { mode: 'subscribe', hasToken: true, hasChallenge: true }
-[WEBHOOK] Verification successful
-[WEBHOOK] POST request received: { hasSignature: true, bodyLength: 1234 }
-[WEBHOOK] Event received and verified: { object: 'whatsapp_business_account', entryCount: 1 }
+
+**Resultados esperados:**
+- ✅ **Status 200**: Webhook funcionando correctamente
+- ❌ **Status 401**: Error de autenticación (verificar APP_SECRET)
+- ❌ **Status 400**: Error de formato en el body
+- ❌ **Status 500**: Error interno (revisar logs de Vercel)
+
+### CI/CD con GitHub Actions
+
+#### Configurar Secrets
+
+En tu repositorio de GitHub, ve a **Settings > Secrets and variables > Actions** y agrega:
+
+1. **PROD_URL** (requerido)
+   \`\`\`
+   https://tu-app.vercel.app
+   \`\`\`
+
+2. **APP_SECRET** (opcional, para test completo)
+   \`\`\`
+   tu_app_secret_de_meta_aqui
+   \`\`\`
+
+#### Workflow Automático
+
+El workflow `.github/workflows/post-deploy-check.yml` se ejecuta automáticamente en cada push a `main` y:
+
+1. ✅ Ejecuta health check contra producción
+2. 🧪 Si `APP_SECRET` está configurado, ejecuta test completo del webhook
+3. 📊 Reporta el estado en la pestaña "Actions" de GitHub
+
+#### Comandos Manuales
+
+\`\`\`bash
+# Ejecutar workflow manualmente desde GitHub UI
+# O usar GitHub CLI:
+gh workflow run post-deploy-check.yml
 \`\`\`
 
 ## 🔒 Seguridad
@@ -212,6 +238,42 @@ Los logs se muestran en la consola con prefijos identificables:
 3. Revisa que la URL del webhook sea accesible públicamente
 4. Usa el health check para verificar que el servicio esté funcionando
 
+## 📊 Monitoring y Logs
+
+### Logs en Vercel
+
+\`\`\`bash
+vercel logs https://tu-app.vercel.app
+\`\`\`
+
+### Resultados Esperados en Logs
+
+**Health Check exitoso:**
+\`\`\`
+[HEALTH] Health check request received
+[HEALTH] System status: OK, uptime: 123.45s
+\`\`\`
+
+**Webhook verification exitoso:**
+\`\`\`
+[WEBHOOK] GET verification request: { mode: 'subscribe', hasToken: true, hasChallenge: true }
+[WEBHOOK] Verification successful
+\`\`\`
+
+**Evento POST exitoso:**
+\`\`\`
+[WEBHOOK] POST request received: { hasSignature: true, bodyLength: 1234 }
+[WEBHOOK] HMAC signature verified successfully
+[WEBHOOK] Event received and verified: { object: 'whatsapp_business_account', entryCount: 1 }
+\`\`\`
+
+**Error de autenticación (401):**
+\`\`\`
+[WEBHOOK] POST request received: { hasSignature: true, bodyLength: 1234 }
+[SECURITY] HMAC signature verification failed
+[WEBHOOK] Unauthorized request rejected
+\`\`\`
+
 ## 📝 Estructura del Proyecto
 
 \`\`\`
@@ -228,7 +290,12 @@ Los logs se muestran en la consola con prefijos identificables:
 ├── .env.local.example           # Ejemplo de variables de entorno
 ├── vercel.json                  # Configuración de Vercel
 ├── next.config.mjs              # Configuración de Next.js
-└── README.md                    # Este archivo
+├── README.md                    # Este archivo
+├── scripts/
+│   ├── health_check.sh          # Script para health check
+│   └── test_webhook_prod.sh     # Script para test completo del webhook
+└── samples/
+    └── sample_body.json         # Ejemplo de body para test
 \`\`\`
 
 ## 🤝 Contribuir
