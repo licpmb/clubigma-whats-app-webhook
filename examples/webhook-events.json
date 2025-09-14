@@ -1,0 +1,88 @@
+{
+  "message_received": {
+    "object": "whatsapp_business_account",
+    "entry": [
+      {
+        "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+        "changes": [
+          {
+            "value": {
+              "messaging_product": "whatsapp",
+              "metadata": {
+                "display_phone_number": "15550559999",
+                "phone_number_id": "PHONE_NUMBER_ID"
+              },
+              "contacts": [
+                {
+                  "profile": {
+                    "name": "John Doe"
+                  },
+                  "wa_id": "WHATSAPP_ID"
+                }
+              ],
+              "messages": [
+                {
+                  "from": "WHATSAPP_ID",
+                  "id": "wamid.ID",
+                  "timestamp": "TIMESTAMP",
+                  "text": {
+                    "body": "Hello World!"
+                  },
+                  "type": "text"
+                }
+              ]
+            },
+            "field": "messages"
+          }
+        ]
+      }
+    ]
+  },
+  "message_status": {
+    "object": "whatsapp_business_account",
+    "entry": [
+      {
+        "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+        "changes": [
+          {
+            "value": {
+              "messaging_product": "whatsapp",
+              "metadata": {
+                "display_phone_number": "15550559999",
+                "phone_number_id": "PHONE_NUMBER_ID"
+              },
+              "statuses": [
+                {
+                  "id": "wamid.ID",
+                  "status": "delivered",
+                  "timestamp": "TIMESTAMP",
+                  "recipient_id": "WHATSAPP_ID"
+                }
+              ]
+            },
+            "field": "messages"
+          }
+        ]
+      }
+    ]
+  },
+  "template_status_update": {
+    "object": "whatsapp_business_account",
+    "entry": [
+      {
+        "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+        "changes": [
+          {
+            "value": {
+              "message_template_id": "TEMPLATE_ID",
+              "message_template_name": "template_name",
+              "message_template_language": "en_US",
+              "event": "APPROVED"
+            },
+            "field": "message_template_status_update"
+          }
+        ]
+      }
+    ]
+  }
+}
