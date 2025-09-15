@@ -137,7 +137,7 @@ function SwaggerUI() {
                 <p className="font-medium mb-1">2. Probar Verificación:</p>
                 <code className="block bg-muted p-2 rounded text-xs break-all">
                   curl
-                  "https://clubigma.vercel.app/api/webhook?hub.mode=subscribe&hub.verify_token=tu_token&hub.challenge=test"
+                  &quot;https://clubigma.vercel.app/api/webhook?hub.mode=subscribe&amp;hub.verify_token=tu_token&amp;hub.challenge=test&quot;
                 </code>
               </div>
             </div>
