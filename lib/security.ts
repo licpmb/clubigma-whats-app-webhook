@@ -1,5 +1,3 @@
-import { crypto } from "crypto"
-
 /**
  * Verifies the webhook signature using HMAC-SHA256
  * @param signature The signature from the x-hub-signature-256 header
