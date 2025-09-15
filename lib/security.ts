@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "crypto"
+
 /**
  * Verifies the webhook signature using HMAC-SHA256
  * @param signature The signature from the x-hub-signature-256 header
@@ -5,25 +7,16 @@
  * @param secret The app secret from environment variables
  * @returns boolean indicating if the signature is valid
  */
-export async function verifyWebhookSignature(signature: string, rawBody: string, secret: string): Promise<boolean> {
+export function verifyWebhookSignature(signature: string, rawBody: string, secret: string): boolean {
   try {
     // Remove 'sha256=' prefix if present
     const cleanSignature = signature.startsWith("sha256=") ? signature.slice(7) : signature
 
-    // Use Web Crypto API for HMAC-SHA256
-    const encoder = new TextEncoder()
-    const keyData = encoder.encode(secret)
-    const messageData = encoder.encode(rawBody)
-
-    const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
-
-    const signature_buffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData)
-    const expectedSignature = Array.from(new Uint8Array(signature_buffer))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("")
+    // Calculate expected signature
+    const expectedSignature = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex")
 
     // Timing-safe comparison to prevent timing attacks
-    return timingSafeStringCompare(cleanSignature, expectedSignature)
+    return timingSafeEqual(Buffer.from(cleanSignature, "hex"), Buffer.from(expectedSignature, "hex"))
   } catch (error) {
     console.error("[SECURITY] Error verifying signature:", error)
     return false
@@ -41,11 +34,15 @@ export function timingSafeStringCompare(a: string, b: string): boolean {
     return false
   }
 
-  let result = 0
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  try {
+    const bufferA = Buffer.from(a, "utf8")
+    const bufferB = Buffer.from(b, "utf8")
+
+    return timingSafeEqual(bufferA, bufferB)
+  } catch (error) {
+    console.error("[SECURITY] Error in timing-safe comparison:", error)
+    return false
   }
-  return result === 0
 }
 
 /**

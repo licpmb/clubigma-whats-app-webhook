@@ -12,10 +12,11 @@ export async function GET(request: NextRequest) {
     const healthData = {
       ok: true,
       timestamp: new Date().toISOString(),
-      uptime: Math.floor((Date.now() - startTime) / 1000), // Simple uptime calculation
+      uptime: process.uptime(),
       environment: {
-        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "Server",
-        runtime: "Next.js API Route",
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch,
       },
       config: {
         hasRequiredEnvVars: envValidation.isValid,

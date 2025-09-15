@@ -15,13 +15,13 @@ info:
   version: 1.0.0
   contact:
     name: ClubIgma
-    url: https://clubigma.com
+    url: https://clubigma.com.ar
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://clubigma-whats-app-webhook.vercel.app
+  - url: https://clubigma-wsp-api.vercel.app
     description: Producción
   - url: http://localhost:3000
     description: Desarrollo local
