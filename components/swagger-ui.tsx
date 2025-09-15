@@ -14,8 +14,8 @@ export default function SwaggerUI({ spec, domId = "swagger-ui" }: SwaggerUIProps
     const loadSwaggerUI = async () => {
       try {
         const [SwaggerUIBundle, SwaggerUIStandalonePreset] = await Promise.all([
-          import("swagger-ui-dist/swagger-ui-bundle.js").then((m) => m.default),
-          import("swagger-ui-dist/swagger-ui-standalone-preset.js").then((m) => m.default),
+          import("swagger-ui-dist/swagger-ui-bundle.js" as any).then((m: any) => m.default),
+          import("swagger-ui-dist/swagger-ui-standalone-preset.js" as any).then((m: any) => m.default),
         ])
 
         // Initialize Swagger UI
