@@ -13,20 +13,21 @@ export default function SwaggerUI({ spec, domId = "swagger-ui" }: SwaggerUIProps
   useEffect(() => {
     const loadSwaggerUI = async () => {
       try {
-        // Dynamically import Swagger UI
-        const SwaggerUIBundle = (await import("swagger-ui-dist/swagger-ui-bundle.js")).default
+        const [SwaggerUIBundle, SwaggerUIStandalonePreset] = await Promise.all([
+          import("swagger-ui-dist/swagger-ui-bundle.js").then((m) => m.default),
+          import("swagger-ui-dist/swagger-ui-standalone-preset.js").then((m) => m.default),
+        ])
 
         // Initialize Swagger UI
         SwaggerUIBundle({
           url: "/docs/openapi.yaml",
           dom_id: `#${domId}`,
           deepLinking: true,
-          presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.presets.standalone],
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
           plugins: [SwaggerUIBundle.plugins.DownloadUrl],
           layout: "StandaloneLayout",
           tryItOutEnabled: true,
           requestInterceptor: (request: any) => {
-            // Add custom headers or modify requests here if needed
             console.log("[SWAGGER] Request:", request)
             return request
           },
