@@ -1,5 +1,5 @@
 const { execSync } = require("child_process")
-const crypto = require("crypto")
+const { createHmac } = require("node:crypto")
 
 console.log("🧪 Testing WhatsApp Webhook...")
 console.log("================================")
@@ -88,7 +88,7 @@ async function runTests() {
       ],
     })
 
-    const signature = "sha256=" + crypto.createHmac("sha256", APP_SECRET).update(testBody).digest("hex")
+    const signature = "sha256=" + createHmac("sha256", APP_SECRET).update(testBody).digest("hex")
 
     try {
       const postResponse = await fetch(`${BASE_URL}/api/webhook`, {
