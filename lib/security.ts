@@ -57,6 +57,7 @@ export function timingSafeStringCompare(a: string, b: string): boolean {
 export function validateEnvironmentVariables() {
   const verifyToken = process.env.VERIFY_TOKEN
   const appSecret = process.env.APP_SECRET
+  const customKey = process.env.CUSTOM_KEY
 
   const errors: string[] = []
 
@@ -72,6 +73,10 @@ export function validateEnvironmentVariables() {
     errors.push("APP_SECRET should be at least 16 characters long")
   }
 
+  if (!customKey) {
+    errors.push("CUSTOM_KEY environment variable is required")
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -79,6 +84,8 @@ export function validateEnvironmentVariables() {
       hasVerifyToken: !!verifyToken,
       hasAppSecret: !!appSecret,
       appSecretLength: appSecret?.length || 0,
+      hasCustomKey: !!customKey,
+      customKeyLength: customKey?.length || 0,
     },
   }
 }
