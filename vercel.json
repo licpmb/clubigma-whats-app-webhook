@@ -26,9 +26,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "VERIFY_TOKEN": "@verify_token",
-    "APP_SECRET": "@app_secret"
-  }
+  ]
 }

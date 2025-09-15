@@ -12,11 +12,10 @@ export async function GET(request: NextRequest) {
     const healthData = {
       ok: true,
       timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
+      uptime: Math.floor(Date.now() / 1000), // Simple timestamp-based uptime
       environment: {
-        nodeVersion: process.version,
-        platform: process.platform,
-        arch: process.arch,
+        userAgent: request.headers.get("user-agent") || "unknown",
+        runtime: "edge", // Vercel Edge Runtime
       },
       config: {
         hasRequiredEnvVars: envValidation.isValid,

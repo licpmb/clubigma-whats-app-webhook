@@ -13,11 +13,11 @@ APP_SECRET="${APP_SECRET:-10bdf1ef2f112464dc7b78f6547f60cc}"
 if [ "$1" = "local" ]; then
     BASE_URL="http://localhost:3000"
 elif [ "$1" = "prod" ]; then
-    BASE_URL="${2:-https://tu-proyecto.vercel.app}"
+    BASE_URL="${2:-https://clubigma-wsp-api.vercel.app}"
 else
     echo "Uso: $0 [local|prod] [URL_BASE]"
     echo "Ejemplo: $0 local"
-    echo "Ejemplo: $0 prod https://mi-webhook.vercel.app"
+    echo "Ejemplo: $0 prod https://clubigma-wsp-api.vercel.app"
     exit 1
 fi
 
