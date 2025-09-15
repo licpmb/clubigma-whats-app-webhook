@@ -7,18 +7,16 @@ function SwaggerUI() {
   useEffect(() => {
     const loadSwaggerUI = async () => {
       try {
-        const SwaggerUIBundle = await import("swagger-ui-dist/swagger-ui-bundle.js")
-        const SwaggerUIStandalonePreset = await import("swagger-ui-dist/swagger-ui-standalone-preset.js")
+        const SwaggerUIBundle = (await import("swagger-ui-dist/swagger-ui-bundle.js" as any)).default
+        const SwaggerUIStandalonePreset = (await import("swagger-ui-dist/swagger-ui-standalone-preset.js" as any))
+          .default
 
-        const SwaggerUI = SwaggerUIBundle.default || SwaggerUIBundle
-        const StandalonePreset = SwaggerUIStandalonePreset.default || SwaggerUIStandalonePreset
-
-        SwaggerUI({
+        SwaggerUIBundle({
           url: "/docs/openapi.yaml",
           dom_id: "#swagger-ui",
           deepLinking: true,
-          presets: [SwaggerUI.presets.apis, StandalonePreset],
-          plugins: [SwaggerUI.plugins.DownloadUrl],
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
           layout: "StandaloneLayout",
           tryItOutEnabled: true,
           supportedSubmitMethods: ["get", "post", "put", "delete", "patch"],
