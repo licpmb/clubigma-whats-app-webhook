@@ -3,31 +3,22 @@
 import { Suspense, useEffect } from "react"
 import "swagger-ui-dist/swagger-ui.css"
 
-declare module "swagger-ui-dist/swagger-ui-bundle.js" {
-  const SwaggerUIBundle: any
-  export default SwaggerUIBundle
-}
-
-declare module "swagger-ui-dist/swagger-ui-standalone-preset.js" {
-  const SwaggerUIStandalonePreset: any
-  export default SwaggerUIStandalonePreset
-}
-
 function SwaggerUI() {
   useEffect(() => {
     const loadSwaggerUI = async () => {
       try {
-        const [SwaggerUIBundle, SwaggerUIStandalonePreset] = await Promise.all([
-          import("swagger-ui-dist/swagger-ui-bundle.js").then((m) => m.default),
-          import("swagger-ui-dist/swagger-ui-standalone-preset.js").then((m) => m.default),
-        ])
+        const SwaggerUIBundle = await import("swagger-ui-dist/swagger-ui-bundle.js")
+        const SwaggerUIStandalonePreset = await import("swagger-ui-dist/swagger-ui-standalone-preset.js")
 
-        SwaggerUIBundle({
+        const SwaggerUI = SwaggerUIBundle.default || SwaggerUIBundle
+        const StandalonePreset = SwaggerUIStandalonePreset.default || SwaggerUIStandalonePreset
+
+        SwaggerUI({
           url: "/docs/openapi.yaml",
           dom_id: "#swagger-ui",
           deepLinking: true,
-          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          presets: [SwaggerUI.presets.apis, StandalonePreset],
+          plugins: [SwaggerUI.plugins.DownloadUrl],
           layout: "StandaloneLayout",
           tryItOutEnabled: true,
           supportedSubmitMethods: ["get", "post", "put", "delete", "patch"],
