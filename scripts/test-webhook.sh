@@ -7,7 +7,7 @@ set -e
 
 # Configuración
 VERIFY_TOKEN="clubigma_verify_2025"
-APP_SECRET="${APP_SECRET:-tu_app_secret_aqui}"
+APP_SECRET="${APP_SECRET:-10bdf1ef2f112464dc7b78f6547f60cc}"
 
 # Determinar URL base
 if [ "$1" = "local" ]; then
